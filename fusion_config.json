@@ -1,0 +1,20 @@
+{
+  "audio_weight": 0.4,
+  "video_weight": 0.6,
+  "threshold": 0.5,
+  "img_size": 96,
+  "audio_model": "audio_isolation_forest.pkl",
+  "audio_scaler": "audio_scaler.pkl",
+  "video_model": "video_transfer_model.h5",
+  "video_multiclass_model": "video_multiclass_model.keras",
+  "class_names": [
+    "Normal",
+    "Accident",
+    "Fire",
+    "Robbery",
+    "Violence"
+  ],
+  "video_model_type": "multiclass",
+  "img_size_multiclass": 160,
+  "model_architecture": "efficientnetv2"
+}

@@ -1,0 +1,24 @@
+# Datasets
+DATASET/
+
+# Model Files (usually too large for Git)
+*.h5
+*.keras
+*.pkl
+
+# Dynamically generated directories
+logs/
+uploads/
+alerts/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+venv/
+.venv/
+env/
+
+# Jupyter Notebooks
+.ipynb_checkpoints/

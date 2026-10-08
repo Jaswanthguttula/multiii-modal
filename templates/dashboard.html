@@ -223,6 +223,31 @@
             box-shadow: 0 0 40px rgba(255, 51, 102, 0.3), inset 0 0 30px rgba(255, 51, 102, 0.1);
             animation: alertPulse 1.5s ease-in-out infinite;
         }
+        /* Per-anomaly-type status badge colors */
+        .status-fire {
+            background: linear-gradient(135deg, rgba(255, 30, 30, 0.3), rgba(255, 80, 0, 0.15)) !important;
+            color: #ff2222 !important;
+            border: 1px solid rgba(255, 30, 30, 0.6) !important;
+            box-shadow: 0 0 50px rgba(255, 30, 30, 0.4), inset 0 0 30px rgba(255, 30, 30, 0.1) !important;
+        }
+        .status-violence {
+            background: linear-gradient(135deg, rgba(255, 140, 0, 0.3), rgba(255, 180, 0, 0.15)) !important;
+            color: #ff8c00 !important;
+            border: 1px solid rgba(255, 140, 0, 0.6) !important;
+            box-shadow: 0 0 50px rgba(255, 140, 0, 0.4), inset 0 0 30px rgba(255, 140, 0, 0.1) !important;
+        }
+        .status-accident {
+            background: linear-gradient(135deg, rgba(30, 120, 255, 0.3), rgba(0, 150, 255, 0.15)) !important;
+            color: #1e90ff !important;
+            border: 1px solid rgba(30, 120, 255, 0.6) !important;
+            box-shadow: 0 0 50px rgba(30, 120, 255, 0.4), inset 0 0 30px rgba(30, 120, 255, 0.1) !important;
+        }
+        .status-robbery {
+            background: linear-gradient(135deg, rgba(148, 0, 211, 0.3), rgba(180, 0, 255, 0.15)) !important;
+            color: #9400d3 !important;
+            border: 1px solid rgba(148, 0, 211, 0.6) !important;
+            box-shadow: 0 0 50px rgba(148, 0, 211, 0.4), inset 0 0 30px rgba(148, 0, 211, 0.1) !important;
+        }
         @keyframes alertPulse {
             0%, 100% { 
                 box-shadow: 0 0 40px rgba(255, 51, 102, 0.3), inset 0 0 30px rgba(255, 51, 102, 0.1);
@@ -371,6 +396,27 @@
                 0 0 40px rgba(248, 113, 113, 0.25), 
                 0 0 80px rgba(248, 113, 113, 0.08),
                 inset 0 0 25px rgba(248, 113, 113, 0.04);
+            animation: borderAlert 1.5s ease-in-out infinite;
+        }
+        /* Per-anomaly-type video border colors */
+        .anomaly-border-fire {
+            border-color: #ff2222 !important;
+            box-shadow: 0 0 50px rgba(255, 30, 30, 0.35), 0 0 100px rgba(255, 30, 30, 0.1), inset 0 0 30px rgba(255, 30, 30, 0.06) !important;
+            animation: borderAlert 1.5s ease-in-out infinite;
+        }
+        .anomaly-border-violence {
+            border-color: #ff8c00 !important;
+            box-shadow: 0 0 50px rgba(255, 140, 0, 0.35), 0 0 100px rgba(255, 140, 0, 0.1), inset 0 0 30px rgba(255, 140, 0, 0.06) !important;
+            animation: borderAlert 1.5s ease-in-out infinite;
+        }
+        .anomaly-border-accident {
+            border-color: #1e90ff !important;
+            box-shadow: 0 0 50px rgba(30, 120, 255, 0.35), 0 0 100px rgba(30, 120, 255, 0.1), inset 0 0 30px rgba(30, 120, 255, 0.06) !important;
+            animation: borderAlert 1.5s ease-in-out infinite;
+        }
+        .anomaly-border-robbery {
+            border-color: #9400d3 !important;
+            box-shadow: 0 0 50px rgba(148, 0, 211, 0.35), 0 0 100px rgba(148, 0, 211, 0.1), inset 0 0 30px rgba(148, 0, 211, 0.06) !important;
             animation: borderAlert 1.5s ease-in-out infinite;
         }
         @keyframes borderAlert {
@@ -1016,7 +1062,7 @@
         }
 
         // ============ STATE ============
-        const socket = io();
+        const socket = io({ transports: ['websocket', 'polling'] });
         let chart;
         let chartLabels = [];
         let chartAudio = [], chartVideo = [], chartFused = [];
@@ -1143,28 +1189,31 @@
             const container = document.getElementById('videoContainer');
             const anomalyType = data.anomaly_type || 'Anomaly';
             
-            // Anomaly type icons
-            const typeIcons = {
-                'Accident': '⚠️',
-                'Fire': '⚠️',
-                'Robbery': '⚠️',
-                'Violence': '⚠️',
-                'Anomaly': '⚠️',
-                'Normal': '✅'
+            // Anomaly type configuration: icon, label, colors
+            const ANOMALY_CONFIG = {
+                'Fire':     { icon: '🔥', label: 'FIRE DETECTED',     statusClass: 'status-fire',     borderClass: 'anomaly-border-fire',     dotColor: 'red' },
+                'Violence': { icon: '👊', label: 'VIOLENCE DETECTED', statusClass: 'status-violence', borderClass: 'anomaly-border-violence', dotColor: 'red' },
+                'Accident': { icon: '💥', label: 'ACCIDENT DETECTED', statusClass: 'status-accident', borderClass: 'anomaly-border-accident', dotColor: 'cyan' },
+                'Robbery':  { icon: '🦹', label: 'ROBBERY DETECTED',  statusClass: 'status-robbery',  borderClass: 'anomaly-border-robbery',  dotColor: 'red' },
+                'Anomaly':  { icon: '⚠️', label: 'ANOMALY DETECTED',  statusClass: 'status-anomaly',  borderClass: 'anomaly-border',          dotColor: 'red' },
             };
-            const icon = typeIcons[anomalyType] || '⚠️';
+            const allBorderClasses = ['anomaly-border', 'anomaly-border-fire', 'anomaly-border-violence', 'anomaly-border-accident', 'anomaly-border-robbery'];
+            const allStatusClasses = ['status-anomaly', 'status-fire', 'status-violence', 'status-accident', 'status-robbery'];
 
             if (data.is_anomaly) {
-                badge.className = 'status-badge status-anomaly';
-                dot.className = 'pulse-dot red';
-                // Show specific anomaly type with icon
-                text.textContent = '⚠️ ANOMALY DETECTED';
-                container.classList.add('anomaly-border');
+                const cfg = ANOMALY_CONFIG[anomalyType] || ANOMALY_CONFIG['Anomaly'];
+                // Set status badge
+                badge.className = 'status-badge ' + cfg.statusClass;
+                dot.className = 'pulse-dot ' + cfg.dotColor;
+                text.textContent = cfg.icon + ' ' + cfg.label;
+                // Set video border
+                allBorderClasses.forEach(c => container.classList.remove(c));
+                container.classList.add(cfg.borderClass);
             } else {
                 badge.className = 'status-badge status-normal';
                 dot.className = 'pulse-dot green';
                 text.textContent = '✓ MONITORING';
-                container.classList.remove('anomaly-border');
+                allBorderClasses.forEach(c => container.classList.remove(c));
             }
 
             // Diagnostics
@@ -1190,17 +1239,17 @@
             const div = document.createElement('div');
             div.className = 'alert-item';
             
-            // Get anomaly type with styling - Cyberpunk Neon colors
+            // Get anomaly type with distinct colors per classification
             const anomalyType = alert.anomaly_type || 'Anomaly';
-            const typeStyles = {
-                'Accident': { color: '#ff3366', icon: '⚠️', border: '#ff3366' },
-                'Fire': { color: '#ff3366', icon: '⚠️', border: '#ff3366' },
-                'Robbery': { color: '#ff3366', icon: '⚠️', border: '#ff3366' },
-                'Violence': { color: '#ff3366', icon: '⚠️', border: '#ff3366' },
-                'Anomaly': { color: '#ff3366', icon: '⚠️', border: '#ff3366' },
-                'Normal': { color: '#00ff88', icon: '✅', border: '#00ff88' }
+            const ALERT_STYLES = {
+                'Fire':     { color: '#ff2222', icon: '🔥', label: 'FIRE DETECTED',     border: '#ff2222' },
+                'Violence': { color: '#ff8c00', icon: '👊', label: 'VIOLENCE DETECTED', border: '#ff8c00' },
+                'Accident': { color: '#1e90ff', icon: '💥', label: 'ACCIDENT DETECTED', border: '#1e90ff' },
+                'Robbery':  { color: '#9400d3', icon: '🦹', label: 'ROBBERY DETECTED',  border: '#9400d3' },
+                'Anomaly':  { color: '#ff3366', icon: '⚠️', label: 'ANOMALY DETECTED',  border: '#ff3366' },
+                'Normal':   { color: '#00ff88', icon: '✅', label: 'NORMAL',             border: '#00ff88' }
             };
-            const style = typeStyles[anomalyType] || typeStyles['Anomaly'];
+            const style = ALERT_STYLES[anomalyType] || ALERT_STYLES['Anomaly'];
             
             div.style.borderLeftColor = style.border;
             div.style.background = `linear-gradient(135deg, rgba(10, 10, 20, 0.95), ${style.border}18)`;
@@ -1208,7 +1257,7 @@
             
             div.innerHTML =
                 '<div class="alert-time">🚨 ' + alert.time + '</div>' +
-                '<div class="alert-type" style="color:' + style.color + ';text-shadow:0 0 15px ' + style.color + '">' + style.icon + ' ANOMALY DETECTED</div>' +
+                '<div class="alert-type" style="color:' + style.color + ';text-shadow:0 0 15px ' + style.color + '">' + style.icon + ' ' + style.label + '</div>' +
                 '<div class="alert-scores">Fused: <span style="color:' + style.color + '">' + alert.fused +
                 '</span> · Audio: ' + alert.audio + ' · Video: ' + alert.video + '</div>' +
                 (alert.screenshot ? '<div class="alert-scores" style="margin-top:6px"><span style="opacity:0.7">📸</span> ' + alert.screenshot + '</div>' : '');
@@ -1443,8 +1492,27 @@
             const isAnomaly = data.is_anomaly;
             const score = data.score || data.max_score || 0;
             const cls = isAnomaly ? 'anomaly' : 'normal';
-            const color = isAnomaly ? 'var(--accent-red)' : 'var(--accent-green)';
-            const label = isAnomaly ? '⚠️ ANOMALY DETECTED' : '✅ NORMAL';
+            // Per-type colors for file analysis results
+            const RESULT_COLORS = {
+                'Fire': '#ff2222', 'Violence': '#ff8c00',
+                'Accident': '#1e90ff', 'Robbery': '#9400d3',
+                'Anomaly': '#ff3366', 'Normal': '#00ff88'
+            };
+            const RESULT_ICONS = {
+                'Fire': '🔥', 'Violence': '👊',
+                'Accident': '💥', 'Robbery': '🦹',
+                'Anomaly': '⚠️', 'Normal': '✅'
+            };
+            const RESULT_LABELS = {
+                'Fire': 'FIRE DETECTED', 'Violence': 'VIOLENCE DETECTED',
+                'Accident': 'ACCIDENT DETECTED', 'Robbery': 'ROBBERY DETECTED',
+                'Anomaly': 'ANOMALY DETECTED', 'Normal': 'NORMAL'
+            };
+            const detectedType = data.anomaly_type || (isAnomaly ? 'Anomaly' : 'Normal');
+            const color = isAnomaly ? (RESULT_COLORS[detectedType] || '#ff3366') : 'var(--accent-green)';
+            const icon = RESULT_ICONS[detectedType] || (isAnomaly ? '⚠️' : '✅');
+            const labelText = isAnomaly ? (RESULT_LABELS[detectedType] || 'ANOMALY DETECTED') : '✅ NORMAL';
+            const label = icon + ' ' + labelText;
             let html = '<div class="result-verdict ' + cls + '">';
             html += '<div class="verdict-label" style="color:' + color + '">' + label + '</div>';
             html += '<div class="verdict-score" style="color:' + color + '">' + score.toFixed(4) + '</div>';

@@ -10,13 +10,13 @@ def test_camera():
         if cap.isOpened():
             ret, frame = cap.read()
             if ret:
-                print(f"✅ Success with backend {backend}! Frame shape: {frame.shape}")
+                print(f"[OK] Success with backend {backend}! Frame shape: {frame.shape}")
                 cap.release()
                 return True
             else:
-                print(f"❌ Opened but could not read frame with backend {backend}")
+                print(f"[FAIL] Opened but could not read frame with backend {backend}")
         else:
-            print(f"❌ Could not open camera with backend {backend}")
+            print(f"[FAIL] Could not open camera with backend {backend}")
         if cap:
             cap.release()
             
@@ -25,11 +25,11 @@ def test_camera():
     if cap.isOpened():
         ret, frame = cap.read()
         if ret:
-            print(f"✅ Success with index 1! Frame shape: {frame.shape}")
+            print(f"[OK] Success with index 1! Frame shape: {frame.shape}")
             cap.release()
             return True
     
-    print("\n❌ All tests failed.")
+    print("\n[FAIL] All tests failed.")
     return False
 
 if __name__ == "__main__":
